@@ -23,13 +23,11 @@ public class MyStringBuilder {
         currentSnapshotIndex++;
     }
 
-    public boolean undo() {
+    public void undo() {
         if (currentSnapshotIndex > 0) {
             currentSnapshotIndex--;
             restoreSnapshot();
-            return true;
         }
-        return false;
     }
 
     private void restoreSnapshot() {
