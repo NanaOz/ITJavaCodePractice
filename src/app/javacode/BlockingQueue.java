@@ -1,5 +1,6 @@
 package app.javacode;
 
+import java.util.ArrayDeque;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -8,7 +9,7 @@ public class BlockingQueue<T> {
     private final int capacity;
 
     public BlockingQueue(int capacity) {
-        this.queue = new LinkedList<T>();
+        this.queue = new ArrayDeque<>();
         this.capacity = capacity;
     }
 
