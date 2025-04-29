@@ -5,6 +5,7 @@ import app.javacode.model.Views;
 import app.javacode.repository.OrderRepository;
 import app.javacode.repository.UserRepository;
 import com.fasterxml.jackson.annotation.JsonView;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +19,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
 
+    @Autowired
     public UserController(UserRepository userRepository, OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
@@ -31,6 +33,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @JsonView(Views.UserDetails.class)
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         Optional<User> optionalUser = userRepository.findById(id);
 
@@ -49,7 +52,7 @@ public class UserController {
         return ResponseEntity.created(URI.create("/api/users/" + savedUser.getId())).body(savedUser);
     }
 
-    @PutMapping("/{id]")
+    @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent()) {

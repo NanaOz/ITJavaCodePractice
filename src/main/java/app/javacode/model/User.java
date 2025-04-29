@@ -23,13 +23,6 @@ public class User {
     @JsonView(Views.UserDetails.class)
     private List<Order> orders = new ArrayList<Order>();
 
-    public User(Long id, String name, String email, List<Order> orders) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.orders = orders;
-    }
-
     public Long getId() {
         return id;
     }
