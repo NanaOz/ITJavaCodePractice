@@ -1,7 +1,6 @@
 package app.javacode.repository;
 
 import app.javacode.model.Order;
-import app.javacode.model.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
