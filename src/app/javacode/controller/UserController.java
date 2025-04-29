@@ -6,11 +6,9 @@ import app.javacode.repository.OrderRepository;
 import app.javacode.repository.UserRepository;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +31,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
         Optional<User> optionalUser = userRepository.findById(id);
 
         if (optionalUser.isPresent()) {
@@ -45,5 +43,35 @@ public class UserController {
         }
     }
 
+    @PostMapping
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        User savedUser = userRepository.save(user);
+        return ResponseEntity.created(URI.create("/api/users/" + savedUser.getId())).body(savedUser);
+    }
 
+    @PutMapping("/{id]")
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+        Optional<User> optionalUser = userRepository.findById(id);
+        if (optionalUser.isPresent()) {
+            User userDetails = optionalUser.get();
+            userDetails.setName(user.getName());
+            userDetails.setEmail(user.getEmail());
+            User savedUser = userRepository.save(userDetails);
+            return ResponseEntity.ok(savedUser);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<User> deleteUser(@PathVariable Long id) {
+        Optional<User> optionalUser = userRepository.findById(id);
+
+        if (optionalUser.isPresent()) {
+            userRepository.delete(optionalUser.get());
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
