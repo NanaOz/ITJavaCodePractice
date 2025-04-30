@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonView(Views.OrderSummary.class)
+    @JsonView({Views.OrderSummary.class, Views.UserDetails.class})
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

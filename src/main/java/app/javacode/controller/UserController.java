@@ -5,6 +5,7 @@ import app.javacode.model.Views;
 import app.javacode.repository.OrderRepository;
 import app.javacode.repository.UserRepository;
 import com.fasterxml.jackson.annotation.JsonView;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,12 +36,11 @@ public class UserController {
     @GetMapping("/{id}")
     @JsonView(Views.UserDetails.class)
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        Optional<User> optionalUser = userRepository.findById(id);
+        User user = userRepository.findById(id).orElse(null);
 
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            user.setOrders(orderRepository.findByUserId(user.getId()));
-            return ResponseEntity.ok().body(user);
+        if (user != null) {
+            Hibernate.initialize(user.getOrders());
+            return ResponseEntity.ok(user);
         } else {
             return ResponseEntity.notFound().build();
         }

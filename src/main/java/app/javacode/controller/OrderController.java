@@ -1,6 +1,7 @@
 package app.javacode.controller;
 
 import app.javacode.model.Order;
+import app.javacode.model.User;
 import app.javacode.model.Views;
 import app.javacode.repository.OrderRepository;
 import app.javacode.repository.UserRepository;
@@ -12,6 +13,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
+@RestController
+@RequestMapping("/api/orders")
 public class OrderController {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -49,7 +52,10 @@ public class OrderController {
         if (order.getUser() == null || !userRepository.existsById(order.getUser().getId())) {
             return ResponseEntity.badRequest().build();
         }
+        User user = userRepository.findById(order.getUser().getId()).orElseThrow();
+        order.setUser(user);
 
+        user.getOrders().add(order);
         Order savedOrder = orderRepository.save(order);
         return ResponseEntity.created(URI.create("/api/orders/" + savedOrder.getId())).body(savedOrder);
     }
