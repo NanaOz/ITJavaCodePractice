@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 
-public class UserControllerTest {
+public class UserControllerTests {
 
     @Mock
     private UserRepository userRepository;
