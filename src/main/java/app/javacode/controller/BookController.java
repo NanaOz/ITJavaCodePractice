@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class BookController {
     @PostMapping
     public ResponseEntity<Book> createBook(@RequestBody Book book) {
         if (book.getAuthor() == null || book.getAuthor().getId() == null) {
-            throw new RuntimeException("Author ID is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Author ID is required");
         }
 
         Author author = authorRepository.findById(book.getAuthor().getId())
@@ -56,7 +57,7 @@ public class BookController {
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book book) {
         Book bookToUpdate = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found"));
 
         bookToUpdate.setTitle(book.getTitle());
         bookToUpdate.setPages(book.getPages());
@@ -64,7 +65,7 @@ public class BookController {
 
         if (book.getAuthor() != null) {
             Author author = authorRepository.findById(book.getAuthor().getId())
-                    .orElseThrow(() -> new RuntimeException("Author not found"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Author not found"));
             bookToUpdate.setAuthor(author);
         }
 
@@ -75,7 +76,7 @@ public class BookController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Book> deleteBook(@PathVariable Long id) {
         Book bookToDelete = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found"));
         bookRepository.delete(bookToDelete);
         return ResponseEntity.noContent().build();
     }
