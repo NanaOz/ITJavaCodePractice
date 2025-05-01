@@ -1,6 +1,7 @@
 package app.javacode.controller;
 
 import app.javacode.dto.OrderDTO;
+import app.javacode.model.Customer;
 import app.javacode.model.Order;
 import app.javacode.model.Product;
 import app.javacode.repository.CustomerRepository;
@@ -10,11 +11,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -31,25 +33,12 @@ public class OrderController {
         this.objectMapper = objectMapper;
     }
 
-    @GetMapping
-    public ResponseEntity<List<OrderDTO>> getOrders() {
-        List<Order> orders = orderRepository.findAll();
-        List<OrderDTO> orderDTOs = new ArrayList<>();
-
-        for (Order order : orders) {
-            OrderDTO orderDTO = objectMapper.convertValue(order, OrderDTO.class);
-            orderDTOs.add(orderDTO);
-        }
-
-        return new ResponseEntity<>(orderDTOs, HttpStatus.OK);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<OrderDTO> getOrder(@PathVariable Long id) {
         Optional<Order> optionalOrder = orderRepository.findById(id);
         if (optionalOrder.isPresent()) {
             Order order = optionalOrder.get();
-            OrderDTO orderDTO = objectMapper.convertValue(order, OrderDTO.class);
+            OrderDTO orderDTO = convertToDTO(order);
             return ResponseEntity.ok(orderDTO);
         } else {
             return ResponseEntity.notFound().build();
@@ -58,19 +47,40 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO orderDTO) {
-        if(!customerRepository.existsById(orderDTO.getCustomer().getCustomerId())){
-            return ResponseEntity.notFound().build();
+        Customer customer = customerRepository.findById(orderDTO.getCustomerId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer not found"));
+
+        List<Product> products = productRepository.findAllById(orderDTO.getProductIds());
+        if (products.size() != orderDTO.getProductIds().size()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Some products not found");
         }
 
-        for (Product product : orderDTO.getProducts()) {
-            if(!productRepository.existsById(product.getProductId())){
-                return ResponseEntity.notFound().build();
-            }
-        }
-
-        Order order = objectMapper.convertValue(orderDTO, Order.class);
+        Order order = new Order();
+        order.setCustomer(customer);
+        order.setProducts(products);
+        order.setShippingAddress(orderDTO.getShippingAddress());
+        order.setTotalPrice(orderDTO.getTotalPrice());
+        order.setOrderStatus(orderDTO.getOrderStatus());
         order.setOrderDate(LocalDate.now());
+
         Order savedOrder = orderRepository.save(order);
-        return ResponseEntity.status(HttpStatus.CREATED).body(objectMapper.convertValue(savedOrder, OrderDTO.class));
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedOrder));
+    }
+
+    private OrderDTO convertToDTO(Order order) {
+        OrderDTO dto = new OrderDTO();
+        dto.setOrderId(order.getOrderId());
+        dto.setCustomerId(order.getCustomer().getCustomerId());
+        dto.setOrderDate(order.getOrderDate());
+        dto.setShippingAddress(order.getShippingAddress());
+        dto.setTotalPrice(order.getTotalPrice());
+        dto.setOrderStatus(order.getOrderStatus());
+
+        List<Long> productIds = order.getProducts().stream()
+                .map(Product::getProductId)
+                .collect(Collectors.toList());
+        dto.setProductIds(productIds);
+
+        return dto;
     }
 }

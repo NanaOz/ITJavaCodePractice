@@ -1,8 +1,6 @@
 package app.javacode.dto;
 
-import app.javacode.model.Customer;
 import app.javacode.model.OrderStatus;
-import app.javacode.model.Product;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,8 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 public class OrderDTO {
     private Long orderId;
-    private Customer customer;
-    private List<Product> products;
+    private Long customerId;
+    private List<Long> productIds;
     private LocalDate orderDate;
     private String shippingAddress;
     private int totalPrice;
