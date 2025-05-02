@@ -49,6 +49,9 @@ public class CustomerController {
 
     @PostMapping
     public ResponseEntity<CustomerDTO> createCustomer(@RequestBody CustomerDTO customerDTO) {
+        if (customerDTO.getEmail() == null || customerDTO.getContactNumber() == null) {
+            return ResponseEntity.badRequest().build();
+        }
         Customer customer = objectMapper.convertValue(customerDTO, Customer.class);
         Customer savedCustomer = customerRepository.save(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body(objectMapper.convertValue(savedCustomer, CustomerDTO.class));
